@@ -1,0 +1,314 @@
+---
+title: "Tutorial 1: Introduction to EDA"
+author: "YOUR NAME"
+editor: visual
+format: 
+  gfm:
+    fig-width: 8
+    fig-height: 4
+    toc: true
+    toc_depth: 4
+---
+
+## Before You Begin
+
+Be sure to **read everything** as the structure of the tutorial is such that everything builds upon the items that came before it.
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #FF585D; border-radius: 5px;"}
+Any text highlighted in this red border will require you to either **edit and run a code chunk or just run a code chunk**.
+:::
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #006CB3; border-radius: 5px;"}
+Any text highlighted in this blue border will **require you to answer a question**. You can type your response directly in the box with the blue border.
+:::
+
+## 1: Loading packages
+
+```{r libraries}
+library(tidyverse)
+library(openintro)
+```
+
+## 2: Get to know the data
+
+The data in `loan50` includes loans offered through Lending Club, which is a peer-to-peer lending company.
+
+Again, the Name_of_the_Dataset is `loan50`.
+
+### 2.1: Tasks and Questions - View the data
+
+```{r view data}
+view(loan50)
+```
+
+```{r glimpse}
+glimpse(loan50)
+```
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #006CB3; border-radius: 5px;"}
+4.  From what platform was this data taken?
+
+This data was taken from the Lending Club platform.
+:::
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #006CB3; border-radius: 5px;"}
+5.  What does that platform do?
+
+Lending Club allows individuals to lend to other individuals.
+:::
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #006CB3; border-radius: 5px;"}
+6.  What are the observational units in the `loans50` dataset
+
+Loans people have actually gotten.
+:::
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #006CB3; border-radius: 5px;"}
+7.  How many observations are there?
+
+There are 50 observations in our dataset.
+:::
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #006CB3; border-radius: 5px;"}
+8.  How many variables are there?
+
+There are 18 variables in the dataset.
+:::
+
+### 2.2: Tasks and Questions - Clean the data
+
+When running the glimpse code, you noticed that there were 18 different variable. Let's start narrowing the data frame by selecting only 9 variables. We'll also change the name to loans.
+
+```{r select}
+loans <- loan50 |>
+          select(loan_amount, interest_rate, term, grade, 
+                       state, total_income, homeownership, loan_purpose, total_credit_limit)
+```
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #006CB3; border-radius: 5px;"}
+2.  What else did you do in the code above?
+
+Named the dataset "loans" and selected 9 variables to put into the data frame.
+:::
+
+You may have also seen when running the glimpse function that there were variables that were listed with the the type `fct` This means they are factor variables. We are going to change them to character (chr) using the code below.
+
+```{r mutate}
+loans <- loans |> 
+  mutate_if(is.factor, as.character)
+```
+
+When you start doing other things in this tutorial, you may need to do some more cleaning, but these first two steps were a good start.
+
+## 3: Start asking and exploring the answers to questions
+
+### 3.1 How big do loans tend to be on Lending Club?
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #FF585D; border-radius: 5px;"}
+1.  Let's first visualize the distribution of loan amount by changing NAME_OF_DATA_FRAME, NUMERICAL_VARIABLE, and adding appropriate labels for the x and y axes and the title.
+:::
+
+```{r histogram}
+loans |>
+  ggplot(aes(x = loan_amount)) +
+  geom_histogram(binwidth = 3000) +
+  labs(
+    x = "Loan Amount ($)",
+    y = "Count",
+    title = "Distribution of Loan Amount ($)"
+  ) +
+  theme_minimal()
+```
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #FF585D; border-radius: 5px;"}
+2.  Now let's get the summary statistics that can support the visualization we just made. Adjust the code below to do just that.
+:::
+
+```{r summary stats}
+loans |>
+  filter(!is.na(loan_amount)) |>
+  summarise(
+    mean(loan_amount),
+    median(loan_amount),
+    sd(loan_amount),
+    quantile(loan_amount, 0.25),
+    quantile(loan_amount, 0.75),
+  )
+```
+
+### 3.2 How does the size of the loan relate to the homeownership status of the person getting the loan?
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #FF585D; border-radius: 5px;"}
+1.  Copy the code you wrote that created the histogram for loan_amount and then add the following layer to that code `facet_wrap(~CATEGORICAL_VARIABLE, nrow = 3)`
+:::
+
+```{r faceted histogram}
+loans |>
+  ggplot(aes(x = loan_amount)) +
+  geom_histogram(binwidth = 3000) +
+  labs(
+    x = "Loan Amount ($)",
+    y = "Count",
+    title = "Distribution of Loan Amount ($)"
+  ) +
+  theme_minimal() + 
+facet_wrap(~homeownership, nrow = 3) +
+```
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #FF585D; border-radius: 5px;"}
+2.  Now insert the `group_by` function into the code you wrote to generate the summary statistics for the `loan_amount` histogram.
+:::
+
+```{r group_by and summarise}
+loans |>
+  group_by(homeownership) |>
+  filter(!is.na(loan_amount)) |>
+  summarise(
+    mean(loan_amount),
+    median(loan_amount),
+    sd(loan_amount),
+    quantile(loan_amount, 0.25),
+    quantile(loan_amount, 0.75),
+  )
+```
+
+### 3.3 In looking at the previous graph, you may ask, well how many observations in our data frame fell into each homeownership category?
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #FF585D; border-radius: 5px;"}
+1.  Change `NAME_OF_DATA_FRAME` and `CATEGORICAL_VARIABLE`
+:::
+
+```{r arranging a table}
+loans |>
+  count(homeownership) |>
+  arrange(desc(n)) 
+
+```
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #FF585D; border-radius: 5px;"}
+**Challenge:** Use the mutate function to add a variable to the table you just created that shows the proportion of each level of homeownership. In other words, the table should show the number of people that got a loan while also having a mortgage and the proportion of people who got a loan while also having a mortgage.
+:::
+
+```{r proportion challenge}
+home_own <- loans %>%
+  count(homeownership) %>%
+  mutate(proportion = n/sum(n)) %>%
+arrange(desc(n))
+```
+
+### 3.4 How does the size of the loan relate to one's total income?
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #FF585D; border-radius: 5px;"}
+1.  When creating a scatter plot, the predictor variable is on the x axis and the outcome variable is on the y axis. Given that, adjust the following code, to create a scatter plot showing the relationship between total income and size of the loan.
+:::
+
+```{r scatter plot}
+loans |>
+  ggplot(aes(x = total_income, y = loan_amount)) +
+  geom_point() +
+  labs(
+    x = "Total Income ($)",
+    y = "Loan Size ($)",
+    title = "Loan Size based on Total Income"
+  ) +
+  theme_minimal()
+```
+
+Adding a least squares regression line to the plot and generating an equation allows you to better quantify the association between the two numerical values. You will now do both of those things in the following sections of this tutorial.
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #FF585D; border-radius: 5px;"}
+Any text highlighted in this red border will require you to either **edit and run a code chunk or just run a code chunk**.
+
+2.  a\. Add the line representing the linear model to the scatter plot you just created.
+
+To do this, type "`lm`" where you see `TYPE_OF_MODEL` in the code chunk below.
+:::
+
+Teaching Tip: `geom_smooth` is the function that adds the line and the `lm` code you added stands for linear model. When you progress to higher levels of statistics and data science, you will add in different types of models while also using `geom_smooth`.
+
+```{r}
+loans |>
+  ggplot(aes(x = total_income, y = loan_amount)) +
+  geom_point() +
+  geom_smooth(method = lm, se = FALSE) +
+  labs(
+    x = "Total Income ($)", 
+    y = "Loan Size ($)",
+    title = "Loan Size Based on Total Income ($)"
+    ) +
+  theme_minimal()
+```
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #FF585D; border-radius: 5px;"}
+3.  Generate the intercept and slope of the model. To do this, replace `NAME_OF_DATA_FRAME`, `PREDICTOR`, and `OUTCOME` in the code chunk below.
+:::
+
+```{r the model}
+lm(data = loans, formula = total_income~loan_amount)
+```
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #006CB3; border-radius: 5px;"}
+4.  Write the equation in the space below.
+
+    y = 3.488x + 45640.843
+:::
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #FF585D; border-radius: 5px;"}
+5.  Find the mean and standard deviation of each variable along with the correlation coefficient by changing `PREDICTOR` and `OUTCOME` in the code chunk below.
+:::
+
+```{r correlation}
+loans |>
+  summarise(
+    mean_income = mean(total_income), 
+    sd_income = sd(total_income), 
+    mean_aid = mean(loan_amount), 
+    sd_aid = sd(loan_amount),
+    r = cor(loan_amount, total_income)
+  ) |>
+    mutate(
+    r_squared = r^2
+  )
+```
+
+Getting the numbers is only part of the battle. Interpreting the model properly and then clearly communicating that to others is essential. You will now practice doing just that.
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #006CB3; border-radius: 5px;"}
+6.  Use the slope coefficient to describe the direction of the association.
+
+The slope coefficient is 8.211e-02, so the association is positive, but the slope isn't steep.
+:::
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #006CB3; border-radius: 5px;"}
+7.  Use the R-squared value to describe the strength of the association.
+
+The R\^2 value is 0.2863685, so the association isn't strong. The closer this value is to 1, the better the association.
+:::
+
+### 3.5 For what purpose are people getting loans?
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #FF585D; border-radius: 5px;"}
+1.  Edit the code chunk below to create a bar graph showing the purposes of the loans in our sample.
+:::
+
+```{r pupose bar graph}
+loans |>
+  ggplot(aes(y = fct_rev(fct_infreq(loan_purpose)))) +
+  geom_bar() +
+  labs(
+    x = "Count", 
+    y = "Loan Purpose",
+    title = "Purpose of Loans"
+    ) +
+  theme_minimal()
+```
+
+::: {style="color: black; background-color: white; padding: 15px; border: 5px solid #FF585D; border-radius: 5px;"}
+2.  Create a table that can supports the bar graph you just made.
+:::
+
+```{r}
+purpose <- loans %>%
+  count(loan_purpose) %>%
+  arrange(desc(n))
+```
